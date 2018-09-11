@@ -1,1 +1,2 @@
 tg-infobot.code-workspace
+__pycache__/*.pyc
