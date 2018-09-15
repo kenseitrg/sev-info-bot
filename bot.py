@@ -3,7 +3,6 @@ from telebot import TeleBot, types
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from db.models import User, MsgHash
-from updater import process_worker
 import os, time, threading
 
 TOKEN = os.environ.get("TG_TOKEN")
@@ -14,6 +13,7 @@ engine = create_engine(db_url)
 Session = sessionmaker(bind=engine)
 bot = TeleBot(TOKEN)
 
+from updater import process_worker
 
 def register_user(user_id):
     db_session = Session()
