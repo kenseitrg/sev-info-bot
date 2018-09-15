@@ -43,4 +43,5 @@ if __name__ == "__main__":
     process_worker("water", db_session)
     process_worker("electro_plan", db_session)
     process_worker("electro_emg", db_session)
+    db_session.close()
 

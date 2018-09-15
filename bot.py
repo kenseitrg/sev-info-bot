@@ -21,6 +21,7 @@ def register_user(user_id):
     if existing_user is None:
         db_session.add(User(user_id))
     db_session.commit()
+    db_session.close()
 
 def generate_initial_markup():
     markup = types.InlineKeyboardMarkup()
@@ -67,6 +68,7 @@ def updater_task(msg_type):
             for msg in messages:
                 bot.send_message(usr.tg_id, render_reply(msg), parse_mode="HTML", disable_web_page_preview=True)
             bot.send_message(usr.tg_id, "Больше информации?", reply_markup=generate_initial_markup())
+    db_session.close()
 
 def updater_callable():
     while True:
