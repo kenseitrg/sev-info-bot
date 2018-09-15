@@ -1,9 +1,24 @@
 from site_parser import get_messages_main
 from telebot import TeleBot, types
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from db.models import User, MsgHash
 import os
 
 TOKEN = os.environ.get("TG_TOKEN")
+local_path = "postgresql://postgres:pgpass@localhost:5432/test"
+db_url = os.environ.get("DATABASE_URL") or local_path
 bot = TeleBot(TOKEN)
+engine = create_engine(db_url)
+Session = sessionmaker(bind=engine)
+
+
+def register_user(user_id):
+    db_session = Session()
+    existing_user = db_session.query(User).filter(User.tg_id == user_id).first()
+    if existing_user is None:
+        db_session.add(User(user_id))
+    db_session.commit()
 
 def generate_initial_markup():
     markup = types.InlineKeyboardMarkup()
@@ -19,10 +34,11 @@ def generate_electro_markup():
     markup.row(plan_button, emg_button)
     return markup
 
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['start'])
 def handle_start_help(message):
     bot.send_message(message.from_user.id, "Инормация о работе служб в Севастополе")
     bot.send_message(message.from_user.id, "Вода или Электроэнергия?", reply_markup=generate_initial_markup())
+    register_user(message.from_user.id)
 
 def render_reply(reply):
     output = reply["date"] + "-" + reply["title"] + "\n" + reply["text"] + "\n"
