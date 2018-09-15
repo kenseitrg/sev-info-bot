@@ -20,6 +20,7 @@ def register_user(user_id):
     existing_user = db_session.query(User).filter(User.tg_id == user_id).first()
     if existing_user is None:
         db_session.add(User(user_id))
+        bot.send_message(user_id, "Вы добавлены в базу данных бота")
     db_session.commit()
     db_session.close()
 
