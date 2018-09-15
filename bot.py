@@ -85,5 +85,5 @@ def run_periodic_updates():
     t.start()
 
 if __name__ == "__main__":
-    #run_periodic_updates()
+    run_periodic_updates()
     bot.polling(none_stop=True)
