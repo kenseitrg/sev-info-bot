@@ -34,7 +34,7 @@ def process_worker(msg_type):
         return 0
 
 if __name__ == "__main__":
-    print(process_worker("water"))
-    print(process_worker("electro_plan"))
-    print(process_worker("electro_emg"))
+    process_worker("water")
+    process_worker("electro_plan")
+    process_worker("electro_emg")
 
