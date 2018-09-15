@@ -3,14 +3,16 @@ from telebot import TeleBot, types
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from db.models import User, MsgHash
-import os
+from updater import process_worker
+import os, time, threading
 
 TOKEN = os.environ.get("TG_TOKEN")
+WAIT_TIME = 3*60*60
 local_path = "postgresql://postgres:pgpass@localhost:5432/test"
 db_url = os.environ.get("DATABASE_URL") or local_path
-bot = TeleBot(TOKEN)
 engine = create_engine(db_url)
 Session = sessionmaker(bind=engine)
+bot = TeleBot(TOKEN)
 
 
 def register_user(user_id):
@@ -56,4 +58,28 @@ def handle_general_message(call):
 def handle_electro_message(call):
     bot.send_message(call.from_user.id, "Тип работ?", reply_markup=generate_electro_markup())
 
-bot.polling(none_stop=True)
+def updater_task(msg_type):
+    db_session = Session()
+    messages = process_worker(msg_type)
+    users = db_session.query(User).all()
+    if messages != 0:
+        for usr in users:
+            for msg in messages:
+                bot.send_message(usr.tg_id, render_reply(msg), parse_mode="HTML", disable_web_page_preview=True)
+            bot.send_message(usr.tg_id, "Больше информации?", reply_markup=generate_initial_markup())
+
+def updater_callable():
+    while True:
+        updater_task("water")
+        updater_task("electro_plan")
+        updater_task("electro_emg")
+        time.sleep(WAIT_TIME)
+
+def run_periodic_updates():
+    t = threading.Thread(target=updater_callable)
+    t.daemon = True
+    t.start()
+
+if __name__ == "__main__":
+    run_periodic_updates()
+    bot.polling(none_stop=True)
