@@ -1,3 +1,6 @@
 tg-infobot.code-workspace
 __pycache__/*.pyc
 token.txt
+.vscode/settings.json
+.vscode/launch.json
+db/__pycache__/*.pyc
