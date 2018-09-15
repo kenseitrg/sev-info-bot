@@ -11,11 +11,11 @@ WAIT_TIME = 3*60*60
 local_path = "postgresql://postgres:pgpass@localhost:5432/test"
 db_url = os.environ.get("DATABASE_URL") or local_path
 engine = create_engine(db_url)
-Session = sessionmaker(bind=engine)
 bot = TeleBot(TOKEN)
 
 
 def register_user(user_id):
+    Session = sessionmaker(bind=engine)
     db_session = Session()
     existing_user = db_session.query(User).filter(User.tg_id == user_id).first()
     if existing_user is None:
@@ -61,6 +61,7 @@ def handle_electro_message(call):
     bot.send_message(call.from_user.id, "Тип работ?", reply_markup=generate_electro_markup())
 
 def updater_task(msg_type):
+    Session = sessionmaker(bind=engine)
     db_session = Session()
     messages = process_worker(msg_type, db_session)
     users = db_session.query(User).all()
@@ -84,5 +85,5 @@ def run_periodic_updates():
     t.start()
 
 if __name__ == "__main__":
-    run_periodic_updates()
+    #run_periodic_updates()
     bot.polling(none_stop=True)
