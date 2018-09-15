@@ -60,7 +60,7 @@ def handle_electro_message(call):
 
 def updater_task(msg_type):
     db_session = Session()
-    messages = process_worker(msg_type)
+    messages = process_worker(msg_type, db_session)
     users = db_session.query(User).all()
     if messages != 0:
         for usr in users:
