@@ -60,23 +60,28 @@ def handle_general_message(call):
 def handle_electro_message(call):
     bot.send_message(call.from_user.id, "Тип работ?", reply_markup=generate_electro_markup())
 
-def updater_task(msg_type):
-    Session = sessionmaker(bind=engine)
-    db_session = Session()
-    messages = process_worker(msg_type, db_session)
-    users = db_session.query(User).all()
+def updater_task(msg_type, users, dbs):
+    messages = process_worker(msg_type, dbs)
     if messages != 0:
         for usr in users:
             for msg in messages:
                 bot.send_message(usr.tg_id, render_reply(msg), parse_mode="HTML", disable_web_page_preview=True)
             bot.send_message(usr.tg_id, "Больше информации?", reply_markup=generate_initial_markup())
-    db_session.close()
+        print("Updated {mtype} messages".format(mtype = msg_type))
+    else:
+        print("No updates for {mtype} messages".format(mtype = msg_type))
+
 
 def updater_callable():
     while True:
-        updater_task("water")
-        updater_task("electro_plan")
-        updater_task("electro_emg")
+        Session = sessionmaker(bind=engine)
+        db_session = Session()
+        users = db_session.query(User).all()
+        print("Users length = {length}".format(length = len(users)))
+        updater_task("water", users, db_session)
+        updater_task("electro_plan", users, db_session)
+        updater_task("electro_emg", users, db_session)
+        db_session.close()
         time.sleep(WAIT_TIME)
 
 def run_periodic_updates():
